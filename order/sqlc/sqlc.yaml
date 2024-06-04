@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "query.sql"
+    schema: "schema.sql"
+    rules:
+      - sqlc/db-prepare
+    gen:
+      go:
+        package: "db"
+        out: "../internal/adapter/db"
+        

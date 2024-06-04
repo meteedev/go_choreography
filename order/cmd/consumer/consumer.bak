@@ -1,0 +1,92 @@
+package main
+
+// import (
+// 	"context"
+// 	"log"
+// 	"os"
+// 	"os/signal"
+// 	"sync"
+// 	"syscall"
+
+// 	"github.com/meteedev/go_choreography/constant"
+// 	"github.com/meteedev/go_choreography/order/internal/adapter/handler"
+// 	"github.com/meteedev/go_choreography/order/internal/application/core/service"
+// 	"github.com/meteedev/go_choreography/pkg/event"
+// 	"github.com/meteedev/go_choreography/pkg/messenger"
+// )
+
+// func main() {
+// 	pub, err := messenger.NewRabbitMQPublisher()
+// 	if err != nil {
+// 		log.Fatalf("Failed to initialize RabbitMQ Publisher: %v", err)
+// 	}
+// 	defer pub.Close()
+
+// 	ms := messenger.NewMessageService(nil, pub)
+// 	err = ms.Publisher.DeclareQueue(constant.OrderUpdateQueue)
+// 	if err != nil {
+// 		log.Fatalf("Failed to initialize Queue: %v", err)
+// 	}
+
+// 	s := service.NewOrderService(ms)
+
+// 	h := handler.NewOrderConsumerHandler(s)
+
+// 	events := []event.EventConfig{
+// 		{Name: constant.OrderUpdateQueue, Handler: h.HandleOrderUpdateEvent, IsBinding: false, BindingName: ""},
+// 		{Name: constant.OrderCompensate, Handler: h.HandleOrderCompensate, IsBinding: true, BindingName: constant.OrderFail},
+// 	}
+
+// 	// Create a context and a WaitGroup for managing goroutines
+// 	ctx, cancel := context.WithCancel(context.Background())
+// 	var wg sync.WaitGroup
+
+// 	// Handle OS signals for graceful shutdown
+// 	sigChan := make(chan os.Signal, 1)
+// 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+// 	go func() {
+// 		<-sigChan
+// 		log.Println("Received shutdown signal")
+// 		cancel()
+// 	}()
+
+// 	// Start consumers for each event
+// 	for _, event := range events {
+// 		wg.Add(1)
+// 		go startConsumer(ctx, &wg, event)
+// 	}
+
+// 	// Wait for all consumers to finish before shutting down
+// 	wg.Wait()
+// 	log.Println("All consumers shut down gracefully")
+
+// }
+
+// // startConsumer sets up and starts a RabbitMQ consumer for the given event.
+// func startConsumer(ctx context.Context, wg *sync.WaitGroup, event event.EventConfig) {
+// 	defer wg.Done()
+
+// 	c, err := messenger.NewRabbitMQConsumer(event.Name, event.IsBinding, event.BindingName)
+// 	if err != nil {
+// 		log.Fatalf("Failed to create RabbitMQ consumer for event %s: %v", event.Name, err)
+// 	}
+// 	defer c.Close()
+
+// 	// Create the message service
+// 	ms := messenger.NewMessageService(c, nil)
+
+// 	consumerCtx, consumerCancel := context.WithCancel(ctx)
+// 	defer consumerCancel()
+
+// 	// Start consuming messages for this event
+// 	go func() {
+// 		err := ms.Consume(consumerCtx, event.Handler)
+// 		if err != nil {
+// 			log.Fatalf("Message service error for event %s: %v", event.Name, err)
+// 		}
+// 	}()
+
+// 	// Wait until the context is cancelled
+// 	<-ctx.Done()
+// 	log.Printf("Shutting down consumer for event %s", event.Name)
+// }
