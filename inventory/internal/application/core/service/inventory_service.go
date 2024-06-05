@@ -3,51 +3,78 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/meteedev/go_choreography/constant"
+	"github.com/meteedev/go_choreography/inventory/internal/ports"
 	"github.com/meteedev/go_choreography/pkg/event"
 	"github.com/meteedev/go_choreography/pkg/messenger"
 )
 
 type InventoryService struct {
 	MessageService messenger.MessengerService
+	InventoryRepo  ports.InventoryRepoPort
 }
 
-func NewInventoryService(m messenger.MessengerService) InventoryService {
+func NewInventoryService(m messenger.MessengerService, r ports.InventoryRepoPort) InventoryService {
 	return InventoryService{
+		InventoryRepo:  r,
 		MessageService: m,
 	}
 }
 
 func (i InventoryService) CheckInvBalance(ctx context.Context, order event.OrderCreateEvent) (*event.OrderUpdateEvent, error) {
+	// Helper function to publish a message
+	publishMessage := func(ctx context.Context, msg interface{}, queue string) error {
+		msgData, err := json.Marshal(msg)
+		if err != nil {
+			return err
+		}
+		return i.MessageService.Messenger.Publish(ctx, msgData, queue, false)
+	}
 
-	newOrderID := uuid.New()
+	// Loop through the order items
+	for _, item := range order.OrderItems {
+		count, err := i.InventoryRepo.GetProductQuantity(ctx, item.ProductCode)
+		if err != nil {
+			return nil, err
+		}
 
-	event := event.OrderUpdateEvent{
-		OrderID:     newOrderID,
+		if count < int64(item.Quantity) {
+			updateEvent := event.OrderUpdateEvent{
+				OrderID:     order.ID,
+				ProcessName: "Inv.CheckInvBalance",
+				Status:      false,
+				Reason:      fmt.Sprintf("Insufficient inventory for product code %s", item.ProductCode),
+			}
+			if err := publishMessage(ctx, updateEvent, constant.OrderUpdateQueue); err != nil {
+				return nil, err
+			}
+			return &updateEvent, nil
+		}
+	}
+
+	// If all items have sufficient inventory
+	orderUpdateEvent := event.OrderUpdateEvent{
+		OrderID:     order.ID,
 		ProcessName: "Inv.CheckInvBalance",
 		Status:      true,
-		Reason:      "",
+		Reason:      "Inventory check passed",
 	}
 
-	msgEvent, err := json.Marshal(event)
-
-	if err != nil {
+	// Publish the messages
+	if err := publishMessage(ctx, order, constant.InventoryQueue); err != nil {
 		return nil, err
 	}
 
-	msgOrder, err := json.Marshal(order)
-
-	if err != nil {
+	if err := publishMessage(ctx, orderUpdateEvent, constant.OrderUpdateQueue); err != nil {
 		return nil, err
 	}
 
-	i.MessageService.Messenger.Publish(ctx, msgOrder, constant.InventoryQueue, false)
-	i.MessageService.Messenger.Publish(ctx, msgEvent, constant.OrderUpdateQueue, false)
-
-	return &event, nil
+	return &orderUpdateEvent, nil
 }
+
 
 func (i InventoryService) CompensateOrder(ctx context.Context, order event.OrderCreateEvent) (*event.OrderUpdateEvent, error) {
 

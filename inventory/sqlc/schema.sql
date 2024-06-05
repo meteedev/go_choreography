@@ -1,0 +1,12 @@
+CREATE TABLE inventory(
+    id SERIAL PRIMARY KEY,
+    product_code TEXT UNIQUE NOT NULL,
+    product_name TEXT NOT NULL,
+    description TEXT,
+    quantity_in_stock INTEGER NOT NULL DEFAULT 0,
+    unit_price NUMERIC NOT NULL,
+    reorder_level INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);

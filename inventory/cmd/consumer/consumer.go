@@ -10,6 +10,7 @@ import (
 
 	"github.com/meteedev/go_choreography/config"
 	"github.com/meteedev/go_choreography/constant"
+	"github.com/meteedev/go_choreography/inventory/internal/adapter/db"
 	"github.com/meteedev/go_choreography/inventory/internal/adapter/handler"
 	"github.com/meteedev/go_choreography/inventory/internal/application/core/service"
 	"github.com/meteedev/go_choreography/pkg/event"
@@ -29,7 +30,14 @@ func main() {
 
 	ms := messenger.NewMessengerService(m)
 
-	s := service.NewInventoryService(ms)
+	dbConn, err := db.NewDb()
+	if err != nil {
+		log.Fatalf("Failed to initialize db connection : %v", err)
+	}
+
+	store := db.NewStore(dbConn)
+
+	s := service.NewInventoryService(ms, store)
 
 	h := handler.NewInventoryConsumerHandler(s)
 
