@@ -41,14 +41,14 @@ func (i InventoryService) CheckInvBalance(ctx context.Context, order event.Order
 			return nil, err
 		}
 
-		if count < int64(item.Quantity) {
+		if count < int32(item.Quantity) {
 			updateEvent := event.OrderUpdateEvent{
 				OrderID:     order.ID,
 				ProcessName: "Inv.CheckInvBalance",
-				Status:      false,
+				Status:      constant.Order_status_fail,
 				Reason:      fmt.Sprintf("Insufficient inventory for product code %s", item.ProductCode),
 			}
-			if err := publishMessage(ctx, updateEvent, constant.OrderUpdateQueue); err != nil {
+			if err := publishMessage(ctx, updateEvent, constant.Order_update); err != nil {
 				return nil, err
 			}
 			return &updateEvent, nil
@@ -59,22 +59,21 @@ func (i InventoryService) CheckInvBalance(ctx context.Context, order event.Order
 	orderUpdateEvent := event.OrderUpdateEvent{
 		OrderID:     order.ID,
 		ProcessName: "Inv.CheckInvBalance",
-		Status:      true,
+		Status:      constant.Order_status_processing,
 		Reason:      "Inventory check passed",
 	}
 
 	// Publish the messages
-	if err := publishMessage(ctx, order, constant.InventoryQueue); err != nil {
+	if err := publishMessage(ctx, order, constant.Inventory_reserved); err != nil {
 		return nil, err
 	}
 
-	if err := publishMessage(ctx, orderUpdateEvent, constant.OrderUpdateQueue); err != nil {
+	if err := publishMessage(ctx, orderUpdateEvent, constant.Order_update); err != nil {
 		return nil, err
 	}
 
 	return &orderUpdateEvent, nil
 }
-
 
 func (i InventoryService) CompensateOrder(ctx context.Context, order event.OrderCreateEvent) (*event.OrderUpdateEvent, error) {
 
@@ -83,7 +82,7 @@ func (i InventoryService) CompensateOrder(ctx context.Context, order event.Order
 	event := event.OrderUpdateEvent{
 		OrderID:     newOrderID,
 		ProcessName: "Inv.CompensateOrder",
-		Status:      true,
+		Status:      constant.Inventory_failed,
 		Reason:      "",
 	}
 
@@ -93,7 +92,7 @@ func (i InventoryService) CompensateOrder(ctx context.Context, order event.Order
 		return nil, err
 	}
 
-	i.MessageService.Messenger.Publish(ctx, msgEvent, constant.OrderUpdateQueue, false)
+	i.MessageService.Messenger.Publish(ctx, msgEvent, constant.Order_update, false)
 
 	return &event, nil
 }

@@ -2,9 +2,11 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 
 	"github.com/meteedev/go_choreography/order/internal/ports"
+	"github.com/meteedev/go_choreography/pkg/event"
 )
 
 type OrderConsumerHandler struct {
@@ -19,6 +21,16 @@ func NewOrderConsumerHandler(s ports.OrderServicePort) *OrderConsumerHandler {
 func (o OrderConsumerHandler) HandleOrderUpdateEvent(ctx context.Context, payload []byte) error {
 	log.Printf("HandleOrderUpdateEvent with payload: %s", payload)
 	// Implement order event handling logic here
+	var msg event.OrderUpdateEvent
+
+	err := json.Unmarshal(payload, &msg)
+
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	o.OrderService.UpdateOrder(ctx, msg)
+
 	return nil
 }
 

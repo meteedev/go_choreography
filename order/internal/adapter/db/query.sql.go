@@ -13,7 +13,7 @@ import (
 )
 
 const getOrder = `-- name: GetOrder :one
-SELECT id, customer_id, created_at, updated_at, deleted_at, status FROM orders
+SELECT id, customer_id, created_at, updated_at, update_reason, deleted_at, status FROM orders
 WHERE id = $1 LIMIT 1
 `
 
@@ -25,6 +25,7 @@ func (q *Queries) GetOrder(ctx context.Context, id uuid.UUID) (Order, error) {
 		&i.CustomerID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.UpdateReason,
 		&i.DeletedAt,
 		&i.Status,
 	)
@@ -48,7 +49,7 @@ values
     $4, 
     $5
   )
-  RETURNING id, customer_id, created_at, updated_at, deleted_at, status
+  RETURNING id, customer_id, created_at, updated_at, update_reason, deleted_at, status
 `
 
 type InsertOrderParams struct {
@@ -73,6 +74,7 @@ func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) (Order
 		&i.CustomerID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.UpdateReason,
 		&i.DeletedAt,
 		&i.Status,
 	)
@@ -138,7 +140,7 @@ func (q *Queries) InsertOrderItems(ctx context.Context, arg InsertOrderItemsPara
 }
 
 const listOrders = `-- name: ListOrders :many
-SELECT id, customer_id, created_at, updated_at, deleted_at, status FROM orders
+SELECT id, customer_id, created_at, updated_at, update_reason, deleted_at, status FROM orders
 ORDER BY created_at
 `
 
@@ -156,6 +158,7 @@ func (q *Queries) ListOrders(ctx context.Context) ([]Order, error) {
 			&i.CustomerID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.UpdateReason,
 			&i.DeletedAt,
 			&i.Status,
 		); err != nil {
@@ -177,26 +180,34 @@ update
   orders 
 set
   updated_at = $1,
-  status = $2
+  update_reason=$2,
+  status = $3
 where 
-  id = $3
-  RETURNING id, customer_id, created_at, updated_at, deleted_at, status
+  id = $4
+  RETURNING id, customer_id, created_at, updated_at, update_reason, deleted_at, status
 `
 
 type UpdateOrdersParams struct {
-	UpdatedAt sql.NullTime
-	Status    sql.NullString
-	ID        uuid.UUID
+	UpdatedAt    sql.NullTime
+	UpdateReason sql.NullString
+	Status       sql.NullString
+	ID           uuid.UUID
 }
 
 func (q *Queries) UpdateOrders(ctx context.Context, arg UpdateOrdersParams) (Order, error) {
-	row := q.db.QueryRowContext(ctx, updateOrders, arg.UpdatedAt, arg.Status, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateOrders,
+		arg.UpdatedAt,
+		arg.UpdateReason,
+		arg.Status,
+		arg.ID,
+	)
 	var i Order
 	err := row.Scan(
 		&i.ID,
 		&i.CustomerID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.UpdateReason,
 		&i.DeletedAt,
 		&i.Status,
 	)

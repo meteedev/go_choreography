@@ -11,12 +11,13 @@ import (
 )
 
 type Order struct {
-	ID         uuid.UUID
-	CustomerID sql.NullString
-	CreatedAt  sql.NullTime
-	UpdatedAt  sql.NullTime
-	DeletedAt  sql.NullTime
-	Status     sql.NullString
+	ID           uuid.UUID
+	CustomerID   sql.NullString
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
+	UpdateReason sql.NullString
+	DeletedAt    sql.NullTime
+	Status       sql.NullString
 }
 
 type OrderItem struct {

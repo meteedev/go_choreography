@@ -37,7 +37,7 @@ func (p PaymentService) Pay(ctx context.Context, order event.OrderCreateEvent) (
 		return nil, err
 	}
 
-	p.MessageService.Messenger.Publish(ctx, msg, constant.OrderUpdateQueue, false)
+	p.MessageService.Messenger.Publish(ctx, msg, constant.Order_update, false)
 	return nil, nil
 }
 

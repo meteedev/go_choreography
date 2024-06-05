@@ -34,7 +34,7 @@ func main() {
 	h := handler.NewPaymentConsumerHandler(s)
 
 	events := []event.EventConfig{
-		{Name: constant.InventoryQueue, Handler: h.HandleInventoryEvent},
+		{Name: constant.Inventory_reserved, Handler: h.HandleInventoryEvent},
 	}
 
 	var wg sync.WaitGroup

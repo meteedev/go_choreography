@@ -20,3 +20,11 @@ type Inventory struct {
 	UpdatedAt       sql.NullTime
 	DeletedAt       sql.NullTime
 }
+
+type Reservation struct {
+	ID          int32
+	OrderID     int32
+	ProductCode string
+	Quantity    int32
+	CreatedAt   sql.NullTime
+}

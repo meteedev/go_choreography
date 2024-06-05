@@ -3,6 +3,7 @@ CREATE TABLE orders(
     customer_id CHARACTER(20),
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
+    update_reason VARCHAR(255),
     deleted_at timestamp with time zone,
     status text
 );

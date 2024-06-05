@@ -69,13 +69,20 @@ func convertOrder(order db.Order, items []db.OrderItem) domain.Order {
 	}
 }
 
-// func ConvertUpdateMsgToParams(msg invmsg.UpdateInventoryMessage, status string) db.UpdateOrdersParams {
-
-// 	u := db.UpdateOrdersParams{
+// func createUpdateOrdersParams(status string, reason string, id uuid.UUID) db.UpdateOrdersParams {
+// 	return db.UpdateOrdersParams{
 // 		UpdatedAt: sql.NullTime{Time: time.Now(), Valid: true},
+// 		UpdateReason:    sql.NullString{String: reason, Valid: true},
 // 		Status:    sql.NullString{String: status, Valid: true},
-// 		ID:        msg.OrderId,
+// 		ID:        id,
 // 	}
-
-// 	return u
 // }
+
+func createUpdateOrdersParams(event event.OrderUpdateEvent) db.UpdateOrdersParams {
+	return db.UpdateOrdersParams{
+		UpdatedAt:    sql.NullTime{Time: time.Now(), Valid: true},
+		UpdateReason: sql.NullString{String: event.Reason, Valid: true},
+		Status:       sql.NullString{String: event.Status, Valid: true},
+		ID:           event.OrderID,
+	}
+}

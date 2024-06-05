@@ -42,8 +42,8 @@ func main() {
 	h := handler.NewInventoryConsumerHandler(s)
 
 	events := []event.EventConfig{
-		{Name: constant.OrderQueue, Handler: h.HandleOrderEvent},
-		{Name: constant.InventoryCompensate, Handler: h.HandleOrderFailed},
+		{Name: constant.Order_created, Handler: h.HandleOrderEvent},
+		{Name: constant.Inventory_compensate, Handler: h.HandleOrderFailed},
 	}
 
 	var wg sync.WaitGroup

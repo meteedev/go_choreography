@@ -73,11 +73,15 @@ func (o OrderService) CreateOrder(ctx context.Context, order event.OrderCreateEv
 	}
 
 	//o.MessageService.Messenger.Publish(ctx, msg, constant.OrderQueue,false)
-	o.MessageService.Messenger.Publish(ctx, msg, constant.OrderQueue, false)
+	o.MessageService.Messenger.Publish(ctx, msg, constant.Order_created, false)
 	return nil, nil
 }
 
 func (o OrderService) UpdateOrder(ctx context.Context, event event.OrderUpdateEvent) (*domain.Order, error) {
+	
 	log.Println("in service call UpdateOrder ", event)
+	u := createUpdateOrdersParams(event)
+	o.OrderRepo.UpdateOrders(ctx, u)
+
 	return nil, nil
 }

@@ -42,8 +42,7 @@ func main() {
 	h := handler.NewOrderConsumerHandler(s)
 
 	events := []event.EventConfig{
-		{Name: constant.OrderUpdateQueue, Handler: h.HandleOrderUpdateEvent},
-		{Name: constant.OrderCompensate, Handler: h.HandleOrderCompensate},
+		{Name: constant.Order_update, Handler: h.HandleOrderUpdateEvent},
 	}
 
 	var wg sync.WaitGroup

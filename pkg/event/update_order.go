@@ -7,6 +7,6 @@ import (
 type OrderUpdateEvent struct {
 	OrderID     uuid.UUID `json:"order_id"`
 	ProcessName string    `json:"process_name"`
-	Status      bool      `json:"status"`
+	Status      string    `json:"status"`
 	Reason      string    `json:"reason"`
 }

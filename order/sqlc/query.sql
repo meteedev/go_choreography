@@ -54,7 +54,8 @@ update
   orders 
 set
   updated_at = $1,
-  status = $2
+  update_reason=$2,
+  status = $3
 where 
-  id = $3
+  id = $4
   RETURNING * ;

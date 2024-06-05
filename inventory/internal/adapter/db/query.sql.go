@@ -33,13 +33,68 @@ func (q *Queries) GetProduct(ctx context.Context, productCode string) (Inventory
 }
 
 const getProductQuantity = `-- name: GetProductQuantity :one
-SELECT count(quantity_in_stock) FROM inventory
+SELECT quantity_in_stock as count FROM inventory
 WHERE product_code = $1
 `
 
-func (q *Queries) GetProductQuantity(ctx context.Context, productCode string) (int64, error) {
+func (q *Queries) GetProductQuantity(ctx context.Context, productCode string) (int32, error) {
 	row := q.db.QueryRowContext(ctx, getProductQuantity, productCode)
-	var count int64
+	var count int32
 	err := row.Scan(&count)
 	return count, err
+}
+
+const updateProductQuantity = `-- name: UpdateProductQuantity :one
+UPDATE inventory 
+SET quantity_in_stock = quantity_in_stock - $1, updated_at = NOW() 
+WHERE product_code = $2
+RETURNING id, product_code, product_name, description, quantity_in_stock, unit_price, reorder_level, created_at, updated_at, deleted_at
+`
+
+type UpdateProductQuantityParams struct {
+	QuantityInStock int32
+	ProductCode     string
+}
+
+func (q *Queries) UpdateProductQuantity(ctx context.Context, arg UpdateProductQuantityParams) (Inventory, error) {
+	row := q.db.QueryRowContext(ctx, updateProductQuantity, arg.QuantityInStock, arg.ProductCode)
+	var i Inventory
+	err := row.Scan(
+		&i.ID,
+		&i.ProductCode,
+		&i.ProductName,
+		&i.Description,
+		&i.QuantityInStock,
+		&i.UnitPrice,
+		&i.ReorderLevel,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const insertReservations = `-- name: insertReservations :one
+INSERT INTO reservations (order_id, product_code, quantity) 
+VALUES ($1, $2, $3)
+RETURNING id, order_id, product_code, quantity, created_at
+`
+
+type insertReservationsParams struct {
+	OrderID     int32
+	ProductCode string
+	Quantity    int32
+}
+
+func (q *Queries) insertReservations(ctx context.Context, arg insertReservationsParams) (Reservation, error) {
+	row := q.db.QueryRowContext(ctx, insertReservations, arg.OrderID, arg.ProductCode, arg.Quantity)
+	var i Reservation
+	err := row.Scan(
+		&i.ID,
+		&i.OrderID,
+		&i.ProductCode,
+		&i.Quantity,
+		&i.CreatedAt,
+	)
+	return i, err
 }

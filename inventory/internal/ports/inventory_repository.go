@@ -5,5 +5,5 @@ import (
 )
 
 type InventoryRepoPort interface {
-	GetProductQuantity(ctx context.Context, productCode string) (int64, error)
+	GetProductQuantity(ctx context.Context, productCode string) (int32, error)
 }

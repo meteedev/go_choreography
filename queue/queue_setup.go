@@ -17,15 +17,15 @@ func SetUpQueue(ctx context.Context) {
 		log.Fatalf("Failed to initialize RabbitMQ Publisher: %v", err)
 	}
 
-	r.DeclareQueue(constant.OrderQueue, false)
-	r.DeclareQueue(constant.OrderUpdateQueue, false)
-	r.DeclareQueue(constant.OrderCompensate, false)
-	r.DeclareQueue(constant.InventoryCompensate, false)
-	r.DeclareQueue(constant.InventoryQueue, false)
-	r.DeclareQueue(constant.PaymentQueue, false)
+	r.DeclareQueue(constant.Order_created, false)
+	r.DeclareQueue(constant.Order_update, false)
+	r.DeclareQueue(constant.Inventory_reserved, false)
+	r.DeclareQueue(constant.Inventory_failed, false)
+	r.DeclareQueue(constant.Inventory_compensate, false)
+	r.DeclareQueue(constant.Payment_processed, false)
 
-	r.DeclareExchange(constant.OrderFail, "fanout", false)
-	r.BindQueue(constant.OrderCompensate, constant.OrderFail, "")
-	r.BindQueue(constant.InventoryCompensate, constant.OrderFail, "")
+	r.DeclareExchange(constant.Payment_failed, "fanout", false)
+	r.BindQueue(constant.Inventory_compensate, constant.Payment_failed, "")
+	r.BindQueue(constant.Order_update, constant.Payment_failed, "")
 
 }
