@@ -8,5 +8,6 @@ import (
 
 type InventoryServicePort interface {
 	CheckInvBalance(ctx context.Context, order event.OrderCreateEvent) (*event.OrderUpdateEvent, error)
+	ReservedProduct(ctx context.Context, order event.OrderCreateEvent) (*event.OrderUpdateEvent, error)
 	CompensateOrder(ctx context.Context, order event.OrderCreateEvent) (*event.OrderUpdateEvent, error)
 }

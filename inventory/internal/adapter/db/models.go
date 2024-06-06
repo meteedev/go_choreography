@@ -6,6 +6,8 @@ package db
 
 import (
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 type Inventory struct {
@@ -23,7 +25,7 @@ type Inventory struct {
 
 type Reservation struct {
 	ID          int32
-	OrderID     int32
+	OrderID     uuid.NullUUID
 	ProductCode string
 	Quantity    int32
 	CreatedAt   sql.NullTime

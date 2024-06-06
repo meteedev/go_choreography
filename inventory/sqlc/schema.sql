@@ -13,7 +13,7 @@ CREATE TABLE inventory(
 
 CREATE TABLE reservations (
     id SERIAL PRIMARY KEY,
-    order_id INTEGER NOT NULL,
+    order_id UUID,
     product_code TEXT NOT NULL,
     quantity INTEGER NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

@@ -10,6 +10,7 @@ import (
 
 	"github.com/meteedev/go_choreography/config"
 	"github.com/meteedev/go_choreography/constant"
+	"github.com/meteedev/go_choreography/payment/internal/adapter/db"
 	"github.com/meteedev/go_choreography/payment/internal/adapter/handler"
 	"github.com/meteedev/go_choreography/payment/internal/application/core/service"
 	"github.com/meteedev/go_choreography/pkg/event"
@@ -27,9 +28,16 @@ func main() {
 	}
 	defer m.Close()
 
+	dbConn, err := db.NewDb()
+	if err != nil {
+		log.Fatalf("Failed to initialize db connection : %v", err)
+	}
+
+	store := db.NewStore(dbConn)
+
 	ms := messenger.NewMessengerService(m)
 
-	s := service.NewPaymentService(ms)
+	s := service.NewPaymentService(store,ms)
 
 	h := handler.NewPaymentConsumerHandler(s)
 

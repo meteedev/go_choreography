@@ -13,7 +13,11 @@ SET quantity_in_stock = quantity_in_stock - $1, updated_at = NOW()
 WHERE product_code = $2
 RETURNING * ;
 
--- name: insertReservations :one
+-- name: InsertReservations :one
 INSERT INTO reservations (order_id, product_code, quantity) 
 VALUES ($1, $2, $3)
+RETURNING * ;
+
+-- name: DeleteReservations :one
+DELETE FROM reservations where order_id = $1 and  product_code = $2 
 RETURNING * ;

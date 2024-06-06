@@ -7,7 +7,32 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
+
+const deleteReservations = `-- name: DeleteReservations :one
+DELETE FROM reservations where order_id = $1 and  product_code = $2 
+RETURNING id, order_id, product_code, quantity, created_at
+`
+
+type DeleteReservationsParams struct {
+	OrderID     uuid.NullUUID
+	ProductCode string
+}
+
+func (q *Queries) DeleteReservations(ctx context.Context, arg DeleteReservationsParams) (Reservation, error) {
+	row := q.db.QueryRowContext(ctx, deleteReservations, arg.OrderID, arg.ProductCode)
+	var i Reservation
+	err := row.Scan(
+		&i.ID,
+		&i.OrderID,
+		&i.ProductCode,
+		&i.Quantity,
+		&i.CreatedAt,
+	)
+	return i, err
+}
 
 const getProduct = `-- name: GetProduct :one
 SELECT id, product_code, product_name, description, quantity_in_stock, unit_price, reorder_level, created_at, updated_at, deleted_at FROM inventory
@@ -44,6 +69,31 @@ func (q *Queries) GetProductQuantity(ctx context.Context, productCode string) (i
 	return count, err
 }
 
+const insertReservations = `-- name: InsertReservations :one
+INSERT INTO reservations (order_id, product_code, quantity) 
+VALUES ($1, $2, $3)
+RETURNING id, order_id, product_code, quantity, created_at
+`
+
+type InsertReservationsParams struct {
+	OrderID     uuid.NullUUID
+	ProductCode string
+	Quantity    int32
+}
+
+func (q *Queries) InsertReservations(ctx context.Context, arg InsertReservationsParams) (Reservation, error) {
+	row := q.db.QueryRowContext(ctx, insertReservations, arg.OrderID, arg.ProductCode, arg.Quantity)
+	var i Reservation
+	err := row.Scan(
+		&i.ID,
+		&i.OrderID,
+		&i.ProductCode,
+		&i.Quantity,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const updateProductQuantity = `-- name: UpdateProductQuantity :one
 UPDATE inventory 
 SET quantity_in_stock = quantity_in_stock - $1, updated_at = NOW() 
@@ -70,31 +120,6 @@ func (q *Queries) UpdateProductQuantity(ctx context.Context, arg UpdateProductQu
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
-	)
-	return i, err
-}
-
-const insertReservations = `-- name: insertReservations :one
-INSERT INTO reservations (order_id, product_code, quantity) 
-VALUES ($1, $2, $3)
-RETURNING id, order_id, product_code, quantity, created_at
-`
-
-type insertReservationsParams struct {
-	OrderID     int32
-	ProductCode string
-	Quantity    int32
-}
-
-func (q *Queries) insertReservations(ctx context.Context, arg insertReservationsParams) (Reservation, error) {
-	row := q.db.QueryRowContext(ctx, insertReservations, arg.OrderID, arg.ProductCode, arg.Quantity)
-	var i Reservation
-	err := row.Scan(
-		&i.ID,
-		&i.OrderID,
-		&i.ProductCode,
-		&i.Quantity,
-		&i.CreatedAt,
 	)
 	return i, err
 }
