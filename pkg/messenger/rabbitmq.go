@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"math/rand"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -33,6 +35,39 @@ func NewRabbitMQ(ctx context.Context, amqpURL string) (*RabbitMQ, error) {
 		Ctx:  ctx,
 	}, nil
 }
+
+
+func NewRabbitMQNotifyClose(ctx context.Context, amqpURL string) (*RabbitMQ, error) {
+	conn, err := amqp.Dial(amqpURL)
+	if err != nil {
+		return nil, err
+	}
+
+	ch, err := conn.Channel()
+	if err != nil {
+		return nil, err
+	}
+
+	var retryCount int
+
+	go func(){
+		retryCount++
+		
+		backoff := time.Duration(15+rand.Intn(60)+2*retryCount) * time.Second
+		log.Printf("Re-connecting... %v in %v", retryCount, backoff)
+		time.Sleep(backoff)
+		
+		NewRabbitMQNotifyClose(ctx,amqpURL)
+
+	}()
+
+	return &RabbitMQ{
+		Conn: conn,
+		Ch:   ch,
+		Ctx:  ctx,
+	}, nil
+}
+
 
 func (r *RabbitMQ) DeclareExchange(name, kind string, durable bool) error {
 	return r.Ch.ExchangeDeclare(
@@ -180,3 +215,4 @@ func (r *RabbitMQ) Consume(ctx context.Context, queueName string, handlerFunc fu
 		}
 	}
 }
+

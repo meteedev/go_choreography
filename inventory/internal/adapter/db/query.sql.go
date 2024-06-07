@@ -69,6 +69,39 @@ func (q *Queries) GetProductQuantity(ctx context.Context, productCode string) (i
 	return count, err
 }
 
+const getReservationsByOrderId = `-- name: GetReservationsByOrderId :many
+SELECT id, order_id, product_code, quantity, created_at FROM reservations WHERE order_id = $1
+`
+
+func (q *Queries) GetReservationsByOrderId(ctx context.Context, orderID uuid.NullUUID) ([]Reservation, error) {
+	rows, err := q.db.QueryContext(ctx, getReservationsByOrderId, orderID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Reservation
+	for rows.Next() {
+		var i Reservation
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrderID,
+			&i.ProductCode,
+			&i.Quantity,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const insertReservations = `-- name: InsertReservations :one
 INSERT INTO reservations (order_id, product_code, quantity) 
 VALUES ($1, $2, $3)

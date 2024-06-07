@@ -24,6 +24,7 @@ func SetUpQueue(ctx context.Context) {
 	r.DeclareQueue(constant.Inventory_compensate, false)
 	r.DeclareQueue(constant.Payment_processed, false)
 
+	// fan out  payment failed to  inv compensate and order update  
 	r.DeclareExchange(constant.Payment_failed, "fanout", false)
 	r.BindQueue(constant.Inventory_compensate, constant.Payment_failed, "")
 	r.BindQueue(constant.Order_update, constant.Payment_failed, "")

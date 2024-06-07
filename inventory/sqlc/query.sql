@@ -21,3 +21,6 @@ RETURNING * ;
 -- name: DeleteReservations :one
 DELETE FROM reservations where order_id = $1 and  product_code = $2 
 RETURNING * ;
+
+-- name: GetReservationsByOrderId :many
+SELECT * FROM reservations WHERE order_id = $1 ;

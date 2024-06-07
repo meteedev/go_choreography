@@ -126,11 +126,24 @@ func (i InventoryService) ReservedProduct(ctx context.Context, order event.Order
 	return &orderUpdateEvent, nil
 }
 
-func (i InventoryService) CompensateOrder(ctx context.Context, order event.OrderCreateEvent) (*event.OrderUpdateEvent, error) {
+func (i InventoryService) CompensateOrder(ctx context.Context, event event.OrderUpdateEvent) ( *event.OrderUpdateEvent,  error) {
+
+	var items []db.Reservation
+	
+
+	items , err := i.InventoryRepo.GetReservationsByOrderId(ctx,uuid.NullUUID{UUID: event.OrderID, Valid: true})
+
+	if err != nil{
+		log.Println("error get reservation ",err.Error())
+		return nil ,err
+	}
+
+	
+	
 
 	// Execute the transaction
-	err := i.InventoryRepo.ExecTx(ctx, func(q *db.Queries) error {
-		for _, item := range order.OrderItems {
+	err = i.InventoryRepo.ExecTx(ctx, func(q *db.Queries) error {
+		for _, item := range items {
 			// Compensate by adding back the reserved quantity to the inventory
 			_, err := q.UpdateProductQuantity(ctx, db.UpdateProductQuantityParams{
 				QuantityInStock: -int32(item.Quantity), // Subtracting the quantity from the inventory
@@ -142,12 +155,12 @@ func (i InventoryService) CompensateOrder(ctx context.Context, order event.Order
 
 			// Delete the reservation
 			_, err = q.DeleteReservations(ctx, db.DeleteReservationsParams{
-				OrderID:     uuid.NullUUID{UUID: order.ID, Valid: true},
+				OrderID:     uuid.NullUUID{UUID: event.OrderID, Valid: true},
 				ProductCode: item.ProductCode,
 			})
 			if err != nil {
 				// If delete reservation failed, publish an error message to order_update
-				errUpdateEvent := newOrderUpdateEvent(order.ID, "Inv.CompensateOrder", constant.Order_status_fail, fmt.Sprintf("Failed to delete reservation: %v", err))
+				errUpdateEvent := newOrderUpdateEvent(event.OrderID, "Inv.CompensateOrder", constant.Order_status_fail, fmt.Sprintf("Failed to delete reservation: %v", err))
 				if publishErr := i.publishMessage(ctx, errUpdateEvent, constant.Order_update); publishErr != nil {
 					return fmt.Errorf("error publishing compensation failure event: %v", publishErr)
 				}
@@ -162,7 +175,7 @@ func (i InventoryService) CompensateOrder(ctx context.Context, order event.Order
 	}
 
 	// Create the order update event after successful compensation
-	orderUpdateEvent := newOrderUpdateEvent(order.ID, "Inv.CompensateOrder", constant.Order_status_fail, "")
+	orderUpdateEvent := newOrderUpdateEvent(event.OrderID, "Inv.CompensateOrder", constant.Order_status_fail, "")
 
 	return &orderUpdateEvent, nil
 }

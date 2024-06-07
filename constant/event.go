@@ -25,7 +25,7 @@ const (
 
 	//publish by payment
 	//consume by order
-	Payment_processed = "payment_processed" //order_consume
+	Payment_processed = "payment_completed" //order_consume
 
 	//publish by payment
 	//fan out to inventory_reserved , order_update
