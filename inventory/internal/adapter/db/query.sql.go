@@ -58,7 +58,7 @@ func (q *Queries) GetProduct(ctx context.Context, productCode string) (Inventory
 }
 
 const getProductQuantity = `-- name: GetProductQuantity :one
-SELECT quantity_in_stock as count FROM inventory
+SELECT COALESCE(quantity_in_stock, 0) as count FROM inventory
 WHERE product_code = $1
 `
 

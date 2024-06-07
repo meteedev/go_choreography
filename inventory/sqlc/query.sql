@@ -3,7 +3,7 @@ SELECT * FROM inventory
 WHERE product_code = $1 LIMIT 1;
 
 -- name: GetProductQuantity :one
-SELECT quantity_in_stock as count FROM inventory
+SELECT COALESCE(quantity_in_stock, 0) as count FROM inventory
 WHERE product_code = $1 ;
 
 

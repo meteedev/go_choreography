@@ -30,7 +30,7 @@ func (c InventoryConsumerHandler) HandleOrderEvent(ctx context.Context, payload 
 		log.Println(err.Error())
 	}
 
-	orderEvent, err := c.InvService.CheckInvBalance(ctx, msg)
+	orderEvent, err := c.InvService.ReservedProduct(ctx, msg)
 	if err != nil {
 		log.Println(err.Error())
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/meteedev/go_choreography/constant"
@@ -171,6 +172,7 @@ func (i InventoryService) checkInventory(ctx context.Context, order event.OrderC
 	for _, item := range order.OrderItems {
 		count, err := i.InventoryRepo.GetProductQuantity(ctx, item.ProductCode)
 		if err != nil {
+			log.Println("GetProductQuantity ",err.Error())
 			return nil, false, err
 		}
 
