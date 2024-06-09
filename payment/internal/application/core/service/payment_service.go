@@ -26,13 +26,7 @@ func NewPaymentService(r ports.PaymentRepositoryPort, m messenger.MessengerServi
 }
 
 func (p PaymentService) Pay(ctx context.Context, order event.OrderCreateEvent) (*event.OrderUpdateEvent, error) {
-	// Prepare payment data
-	// payment := db.InsertPaymentsParams{
-	// 	OrderID:       uuid.NullUUID{UUID: order.ID, Valid: true},
-	// 	Amount:        calculateTotalOrderAmount(order), // You need to implement this function
-	// 	PaymentMethod: "Credit Card",                    // Example payment method
-	// 	PaymentStatus: "Pending",                        // Initial payment status
-	// }
+
 
 	// Insert payment record into the database
 	//_, err := p.PaymentRepo.InsertPayments(ctx, payment)

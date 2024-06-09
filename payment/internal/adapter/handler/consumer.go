@@ -20,7 +20,7 @@ func NewPaymentConsumerHandler(s service.PaymentService) *PaymentConsumerHandler
 
 // Handlers for each event
 func (p PaymentConsumerHandler) HandleInventoryEvent(ctx context.Context, payload []byte) error {
-	log.Printf("Handling order event with payload: %s", payload)
+	//log.Printf("Handling order event with payload: %s", payload)
 
 	var msg event.OrderCreateEvent
 
