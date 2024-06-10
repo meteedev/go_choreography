@@ -19,8 +19,7 @@ func NewOrderConsumerHandler(s ports.OrderServicePort) *OrderConsumerHandler {
 
 // Handlers for each event
 func (o OrderConsumerHandler) HandleOrderUpdateEvent(ctx context.Context, payload []byte) error {
-	log.Printf("HandleOrderUpdateEvent with payload: %s", payload)
-	// Implement order event handling logic here
+	//log.Printf("HandleOrderUpdateEvent with payload: %s", payload)
 	var msg event.OrderUpdateEvent
 
 	err := json.Unmarshal(payload, &msg)
@@ -36,7 +35,7 @@ func (o OrderConsumerHandler) HandleOrderUpdateEvent(ctx context.Context, payloa
 
 // Handlers for each event
 func (o OrderConsumerHandler) HandleOrderCompensate(ctx context.Context, payload []byte) error {
-	log.Printf("HandleOrderCompensate with payload: %s", payload)
+	//log.Printf("HandleOrderCompensate with payload: %s", payload)
 	// Implement order event handling logic here
 	return nil
 }

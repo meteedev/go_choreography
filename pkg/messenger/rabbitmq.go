@@ -57,7 +57,7 @@ func NewRabbitMQNotifyClose(ctx context.Context, amqpURL string) (*RabbitMQ, err
 		log.Printf("Re-connecting... %v in %v", retryCount, backoff)
 		time.Sleep(backoff)
 		
-		NewRabbitMQNotifyClose(ctx,amqpURL)
+		NewRabbitMQ(ctx,amqpURL)
 
 	}()
 

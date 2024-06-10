@@ -42,7 +42,7 @@ func (c InventoryConsumerHandler) HandleOrderEvent(ctx context.Context, payload 
 }
 
 func (c InventoryConsumerHandler) HandleOrderFailed(ctx context.Context, payload []byte) error {
-	log.Printf("HandleOrderFailed with payload: %s", payload)
+	//log.Printf("HandleOrderFailed with payload: %s", payload)
 	
 	var msg event.OrderUpdateEvent
 
@@ -52,14 +52,11 @@ func (c InventoryConsumerHandler) HandleOrderFailed(ctx context.Context, payload
 		log.Println(err.Error())
 	}
 
-	orderEvent, err := c.InvService.CompensateOrder(ctx,msg)
+	_, err = c.InvService.CompensateOrder(ctx,msg)
 	
 	if err != nil {
 		log.Println(err.Error())
 	}
-
-	log.Println(orderEvent)
-
 
 	return nil
 }

@@ -22,9 +22,12 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	m, err := messenger.NewRabbitMQ(ctx, config.GetAmqpURL())
+	//m, err := messenger.NewRabbitMQ(ctx, config.GetAmqpURL())
+	m, err := messenger.NewRabbitMQNotifyClose(ctx, config.GetAmqpURL())
+	
+	
 	if err != nil {
-		log.Fatalf("Failed to initialize Messenger: %v", err)
+		log.Printf("Failed to initialize Messenger: %v", err)
 	}
 	defer m.Close()
 

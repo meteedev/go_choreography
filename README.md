@@ -1,0 +1,3 @@
+# Go choreography
+
+## Pre-requisites
