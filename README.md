@@ -26,7 +26,7 @@
     - run  consumer.go   in path \payment\cnd\consumer\ for inventory consumer event
 
 - example json for post  /orders path
-
+```json
 {
   "customer_id": 987654321,
   "status": "success",
@@ -44,3 +44,4 @@
   ],
   "created_at": 1672531199
 }
+```
